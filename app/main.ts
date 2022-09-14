@@ -1,7 +1,8 @@
-import { app, BrowserWindow, screen } from 'electron';
+import {app, BrowserWindow, screen, ipcMain} from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as url from 'url';
+import {EventNames} from './event-names';
 
 let win: BrowserWindow = null;
 const args = process.argv.slice(1),
@@ -20,6 +21,7 @@ function createWindow(): BrowserWindow {
     height: size.height,
     webPreferences: {
       nodeIntegration: true,
+      devTools: true,
       allowRunningInsecureContent: (serve) ? true : false,
       contextIsolation: false,  // false if you want to run e2e test with Spectron
     },
@@ -81,6 +83,16 @@ try {
       createWindow();
     }
   });
+
+
+  ipcMain.on(EventNames.fileInWrite, (event, ...args) => {
+    console.warn(EventNames.fileInWrite, args)
+    args.forEach((item) => {
+      fs.appendFile('write_in_file_example.txt', item + '\n', function (err) {
+        if (err) return console.log(err);
+      });
+    });
+  })
 
 } catch (e) {
   // Catch Error
